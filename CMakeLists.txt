@@ -42,6 +42,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(ARM_COMPUTE_ARCH "armv8.2-a")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Options.cmake)
@@ -127,69 +128,69 @@ if(NOT ARM_COMPUTE_EXCEPTIONS)
 endif()
 
 # Link OpenMP libraries if ARM_COMPUTE_OPENMP set
-if(ARM_COMPUTE_OPENMP)
-  find_package(OpenMP)
-  if(OpenMP_CXX_FOUND)
-    link_libraries(OpenMP::OpenMP_CXX)
-    add_definitions(-DARM_COMPUTE_OPENMP_SCHEDULER)
-  else()
-    message(FATAL_ERROR "OPENMP was set but no OpenMP library was found!")
-  endif()
-endif()
+#if(ARM_COMPUTE_OPENMP)
+#  find_package(OpenMP)
+#  if(OpenMP_CXX_FOUND)
+#    link_libraries(OpenMP::OpenMP_CXX)
+#    add_definitions(-DARM_COMPUTE_OPENMP_SCHEDULER)
+#  else()
+#    message(FATAL_ERROR "OPENMP was set but no OpenMP library was found!")
+#  endif()
+#endif()
 
 # ---------------------------------------------------------------------
 # SVE Library
 
-add_library(arm_compute_sve "")
-target_compile_options(arm_compute_sve
-                       PRIVATE "-march=armv8.2-a+sve+fp16+dotprod")
-target_compile_definitions(arm_compute_sve PRIVATE ARM_COMPUTE_ENABLE_BF16)
-target_compile_definitions(arm_compute_sve PRIVATE ENABLE_SVE)
-target_compile_definitions(arm_compute_sve PRIVATE ARM_COMPUTE_ENABLE_SVE)
-target_include_directories(
-  arm_compute_sve
-  PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         ${CMAKE_CURRENT_SOURCE_DIR}
-  PUBLIC src
-         src/core/NEON/kernels/arm_conv
-         src/core/NEON/kernels/arm_gemm
-         src/core/NEON/kernels/assembly
-         src/core/cpu/kernels/assembly
-         src/cpu/kernels/assembly
-         src/core/NEON/kernels/arm_gemm/merges)
-
-# ---------------------------------------------------------------------
-# SVE2 Library
-
-add_library(arm_compute_sve2 "")
-target_compile_options(arm_compute_sve2
-                       PRIVATE "-march=armv8.6-a+sve2+fp16+dotprod")
-target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_SVE2)
-target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_BF16)
-target_compile_definitions(arm_compute_sve2 PRIVATE ENABLE_SVE)
-target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_SVE)
-target_include_directories(
-  arm_compute_sve2
-  PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         ${CMAKE_CURRENT_SOURCE_DIR}
-  PUBLIC src
-         src/core/NEON/kernels/arm_conv
-         src/core/NEON/kernels/arm_gemm
-         src/core/NEON/kernels/assembly
-         src/core/cpu/kernels/assembly
-         src/cpu/kernels/assembly
-         src/core/NEON/kernels/arm_gemm/merges)
+#add_library(arm_compute_sve "")
+#target_compile_options(arm_compute_sve
+#                       PRIVATE "-march=armv8.2-a+sve+fp16+dotprod")
+#target_compile_definitions(arm_compute_sve PRIVATE ARM_COMPUTE_ENABLE_BF16)
+#target_compile_definitions(arm_compute_sve PRIVATE ENABLE_SVE)
+#target_compile_definitions(arm_compute_sve PRIVATE ARM_COMPUTE_ENABLE_SVE)
+#target_include_directories(
+#  arm_compute_sve
+#  PUBLIC $<INSTALL_INTERFACE:include>
+#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#         ${CMAKE_CURRENT_SOURCE_DIR}
+#  PUBLIC src
+#         src/core/NEON/kernels/arm_conv
+#         src/core/NEON/kernels/arm_gemm
+#         src/core/NEON/kernels/assembly
+#         src/core/cpu/kernels/assembly
+#         src/cpu/kernels/assembly
+#         src/core/NEON/kernels/arm_gemm/merges)
+#
+## ---------------------------------------------------------------------
+## SVE2 Library
+#
+#add_library(arm_compute_sve2 "")
+#target_compile_options(arm_compute_sve2
+#                       PRIVATE "-march=armv8.6-a+sve2+fp16+dotprod")
+#target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_SVE2)
+#target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_BF16)
+#target_compile_definitions(arm_compute_sve2 PRIVATE ENABLE_SVE)
+#target_compile_definitions(arm_compute_sve2 PRIVATE ARM_COMPUTE_ENABLE_SVE)
+#target_include_directories(
+#  arm_compute_sve2
+#  PUBLIC $<INSTALL_INTERFACE:include>
+#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#         ${CMAKE_CURRENT_SOURCE_DIR}
+#  PUBLIC src
+#         src/core/NEON/kernels/arm_conv
+#         src/core/NEON/kernels/arm_gemm
+#         src/core/NEON/kernels/assembly
+#         src/core/cpu/kernels/assembly
+#         src/cpu/kernels/assembly
+#         src/core/NEON/kernels/arm_gemm/merges)
 
 # ---------------------------------------------------------------------
 # Core Library
 
 add_library(arm_compute "")
 target_compile_options(arm_compute PRIVATE "-march=${ARM_COMPUTE_ARCH}")
-target_compile_definitions(arm_compute PRIVATE ARM_COMPUTE_ENABLE_BF16)
-target_compile_definitions(arm_compute PRIVATE ENABLE_SVE)
-target_compile_definitions(arm_compute PRIVATE ARM_COMPUTE_ENABLE_SVE)
+#target_compile_definitions(arm_compute PRIVATE ARM_COMPUTE_ENABLE_BF16)
+#target_compile_definitions(arm_compute PRIVATE ENABLE_SVE)
+#target_compile_definitions(arm_compute PRIVATE ARM_COMPUTE_ENABLE_SVE)
 target_include_directories(
   arm_compute
   PUBLIC $<INSTALL_INTERFACE:include>
@@ -205,33 +206,33 @@ target_include_directories(
 target_compile_options(arm_compute PUBLIC ${COMMON_CXX_FLAGS})
 
 add_library(ArmCompute::Core ALIAS arm_compute)
-target_link_libraries(
-  arm_compute PUBLIC arm_compute_sve arm_compute_sve2)
+#target_link_libraries(
+#  arm_compute PUBLIC arm_compute_sve arm_compute_sve2)
 
 # ---------------------------------------------------------------------
 # Graph Library
 
-add_library(arm_compute_graph "")
-target_compile_options(arm_compute_graph PRIVATE "-march=${ARM_COMPUTE_ARCH}")
-target_compile_definitions(arm_compute_graph PRIVATE ENABLE_SVE)
-target_compile_definitions(arm_compute_graph PRIVATE ARM_COMPUTE_ENABLE_SVE)
-# add_subdirectory(src/graph)
-
-target_include_directories(
-  arm_compute_graph
-  PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE src
-          src/cpu/kernels/assembly
-          src/core/NEON/kernels/arm_gemm
-          src/core/NEON/kernels/assembly
-          src/core/NEON/kernels/convolution/common
-          src/core/NEON/kernels/arm_conv/depthwise
-          src/core/NEON/kernels/convolution/winograd)
-target_compile_options(arm_compute_graph PUBLIC ${COMMON_CXX_FLAGS})
-
-add_library(ArmCompute::Graph ALIAS arm_compute_graph)
+#add_library(arm_compute_graph "")
+#target_compile_options(arm_compute_graph PRIVATE "-march=${ARM_COMPUTE_ARCH}")
+#target_compile_definitions(arm_compute_graph PRIVATE ENABLE_SVE)
+#target_compile_definitions(arm_compute_graph PRIVATE ARM_COMPUTE_ENABLE_SVE)
+## add_subdirectory(src/graph)
+#
+#target_include_directories(
+#  arm_compute_graph
+#  PUBLIC $<INSTALL_INTERFACE:include>
+#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#         ${CMAKE_CURRENT_SOURCE_DIR}
+#  PRIVATE src
+#          src/cpu/kernels/assembly
+#          src/core/NEON/kernels/arm_gemm
+#          src/core/NEON/kernels/assembly
+#          src/core/NEON/kernels/convolution/common
+#          src/core/NEON/kernels/arm_conv/depthwise
+#          src/core/NEON/kernels/convolution/winograd)
+#target_compile_options(arm_compute_graph PUBLIC ${COMMON_CXX_FLAGS})
+#
+#add_library(ArmCompute::Graph ALIAS arm_compute_graph)
 
 # ---------------------------------------------------------------------
 # Library Target Sources
@@ -266,10 +267,10 @@ if(ARM_COMPUTE_BUILD_TESTING)
   if(ARM_COMPUTE_ENABLE_BF16_VALIDATION)
     target_compile_definitions(arm_compute_validation PRIVATE ARM_COMPUTE_ENABLE_BF16)
   endif()
-  if(ARM_COMPUTE_ENABLE_SVE_VALIDATION)
-    target_compile_definitions(arm_compute_validation PRIVATE ENABLE_SVE)
-    target_compile_definitions(arm_compute_validation PRIVATE ARM_COMPUTE_ENABLE_SVE)
-  endif()
+#  if(ARM_COMPUTE_ENABLE_SVE_VALIDATION)
+#    target_compile_definitions(arm_compute_validation PRIVATE ENABLE_SVE)
+#    target_compile_definitions(arm_compute_validation PRIVATE ARM_COMPUTE_ENABLE_SVE)
+#  endif()
   add_subdirectory(tests/validation)
   target_compile_options(arm_compute_validation PUBLIC ${COMMON_CXX_FLAGS})
   set_target_properties(
@@ -278,7 +279,8 @@ if(ARM_COMPUTE_BUILD_TESTING)
   target_link_libraries(
     arm_compute_validation
     PUBLIC arm_compute arm_compute_graph arm_compute_validation_framework
-           arm_compute_sve)
+#           arm_compute_sve
+  )
   target_link_directories(arm_compute_validation PUBLIC tests)
 
   # ---------------------------------------------------------------------
@@ -304,18 +306,18 @@ if(ARM_COMPUTE_BUILD_EXAMPLES)
 
   add_subdirectory(examples)
 
-  # Graph Examples
-  foreach(test_name ${EXAMPLE_GRAPH_NAMES})
-    add_executable(
-      ${test_name} "examples/${test_name}.cpp" utils/Utils.cpp
-                   utils/GraphUtils.cpp utils/CommonGraphOptions.cpp)
-    target_compile_options(${test_name} PRIVATE "-march=${ARM_COMPUTE_ARCH}")
-    set_target_properties(
-      ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                              "${CMAKE_BINARY_DIR}/examples")
-    target_link_libraries(${test_name} PUBLIC arm_compute
-                                              arm_compute_graph arm_compute_sve)
-  endforeach()
+#  # Graph Examples
+#  foreach(test_name ${EXAMPLE_GRAPH_NAMES})
+#    add_executable(
+#      ${test_name} "examples/${test_name}.cpp" utils/Utils.cpp
+#                   utils/GraphUtils.cpp utils/CommonGraphOptions.cpp)
+#    target_compile_options(${test_name} PRIVATE "-march=${ARM_COMPUTE_ARCH}")
+#    set_target_properties(
+#      ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+#                              "${CMAKE_BINARY_DIR}/examples")
+#    target_link_libraries(${test_name} PUBLIC arm_compute
+#                                              arm_compute_graph arm_compute_sve)
+#  endforeach()
 
   # NEON Examples
   foreach(test_name ${EXAMPLE_NEON_NAMES})
