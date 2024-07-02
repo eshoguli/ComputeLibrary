@@ -393,7 +393,14 @@ Status CpuFullyConnected::validate(const ITensorInfo      *src,
     }
     else
     {
-        ARM_COMPUTE_RETURN_ERROR_ON_MISMATCHING_DATA_TYPES(src, weights, dst);
+        if (is_data_type_quantized(src->data_type()))
+        {
+            ARM_COMPUTE_RETURN_ERROR_ON_MISMATCHING_DATA_TYPES(src, weights);
+        }
+        else
+        {
+            ARM_COMPUTE_RETURN_ERROR_ON_MISMATCHING_DATA_TYPES(src, weights, dst);
+        }
     }
 
     ARM_COMPUTE_RETURN_ERROR_ON(weights->num_dimensions() > 2);
