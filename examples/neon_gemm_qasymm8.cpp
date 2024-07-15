@@ -92,6 +92,33 @@ void quantize_values(int size, qasymm8_t *output, float *input, const Quantizati
     std::cout << "\n";
 }
 
+std::ostream& operator<<(std::ostream& os, const ITensorInfo* tensor_info) {
+    const auto data_type = tensor_info->data_type();
+    switch (data_type) {
+        case DataType::S8: {
+            return os << "S8";
+        }
+        case DataType::QSYMM8: {
+            return os << "QSYMM8";
+        }
+        case DataType::QASYMM8: {
+            return os << "QASYMM8";
+        }
+        case DataType::QASYMM8_SIGNED: {
+            return os << "QASYMM8_SIGNED";
+        }
+        case DataType::S32: {
+            return os << "S32";
+        }
+        case DataType::F32: {
+            return os << "F32";
+        }
+        default: {
+            return os << "[UNKNOWN]";
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     Tensor src1;
@@ -171,8 +198,11 @@ int main(int argc, char **argv)
 
 #if ARM_COMPUTE_DEBUG_ENABLED
     std::cout << "Result matrix:\n";
+    std::cout << "src1 " << src1.info() << ": " << std::endl;
     src1.print(std::cout);
+    std::cout << "src2 " << src2.info() << ": " << std::endl;
     src2.print(std::cout);
+    std::cout << "dst0 " << dst0.info() << ": " << std::endl;
     dst0.print(std::cout);
 #endif // ARM_COMPUTE_DEBUG_ENABLED
 
@@ -216,11 +246,8 @@ int main(int argc, char **argv)
 
     // Configure low precision gemm and initialise result tensor (pre-output)
     NEGEMMLowpMatrixMultiplyCore qgemm;
-    q_res.allocator()->init(TensorInfo(TensorShape(N, M), 1, DataType::S32));
-    qgemm.configure(&q_src1, &q_src2, nullptr, &q_res);
 
     // Configure output stage after computing shift and multiplier parameters
-    NEGEMMLowpOutputStage gemmlowp_output_stage;
     int                   output_multiplier;
     int                   output_shift;
     float                 multiplier = (src1_qinfo.uniform().scale * src2_qinfo.uniform().scale) / dst0_qinfo.uniform().scale;
@@ -233,9 +260,11 @@ int main(int argc, char **argv)
     info.gemmlowp_shift      = output_shift;
     info.gemmlowp_offset     = dst0_qinfo.uniform().offset;
     info.output_data_type    = DataType::QASYMM8;
-    q_res_output.info()->set_data_type(DataType::QASYMM8);
-    q_res_output.info()->set_num_channels(1);
-    gemmlowp_output_stage.configure(&q_res, nullptr, &q_res_output, info);
+
+    GEMMInfo gemm_info;
+    gemm_info.set_gemmlowp_output_stage(info);
+    q_res.allocator()->init(TensorInfo(TensorShape(N, M), 1, DataType::QASYMM8));
+    qgemm.configure(&q_src1, &q_src2, nullptr, &q_res, gemm_info);
 
     // Allocate all tensors
     q_src1.allocator()->allocate();
@@ -250,23 +279,20 @@ int main(int argc, char **argv)
     q3.run();
     // Run low precision matrix multiply kernel
     qgemm.run();
-    // Run output stage kernel
-    gemmlowp_output_stage.run();
     std::cout << "\nTest Passed\n";
 
 #if ARM_COMPUTE_DEBUG_ENABLED
     // Print quantized source matrices
+    std::cout << "q_src1 " << q_src1.info() << ":" << std::endl;
     q_src1.print(std::cout);
+    std::cout << "q_src2 " << q_src2.info() << ":" << std::endl;
     q_src2.print(std::cout);
     // Print result matrix in int32 form - before output stage processing
-    std::cout << "Lowp GEMM output (int32):\n";
+    std::cout << "Lowp GEMM output " << q_res.info() << ":" << std::endl;
     q_res.print(std::cout);
-    // Print QASYMM8 (quantized) matrix
-    std::cout << "Output pipeline result matrix:\n";
-    q_res_output.print(std::cout);
 
     // Expected result
-    std::cout << "Expected result:\n";
+    std::cout << "Expected result " << q_dst0.info() << ":" << std::endl;
     q_dst0.print(std::cout);
 #endif // ARM_COMPUTE_DEBUG_ENABLED
 }
