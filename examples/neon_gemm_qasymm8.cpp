@@ -220,7 +220,7 @@ int main(int argc, char **argv)
         // Fill in tensors, by default fill in with known data - for easy testing
         auto *src1_ptr_f16 = reinterpret_cast<float16_t *>(src1_f16.buffer());
         auto *src2_ptr_f16 = reinterpret_cast<float16_t *>(src2_f16.buffer());
-        auto *dst0_ptr_f16 = reinterpret_cast<float16_t *>(dst0_f16.buffer());
+        //auto *dst0_ptr_f16 = reinterpret_cast<float16_t *>(dst0_f16.buffer());
 
         // Fill in: one is the identity matrix, other is sequential values
         // src1: Identity matrix
@@ -451,7 +451,7 @@ int main(int argc, char **argv)
         dst8_ptr[1] = reinterpret_cast<int8_t *>(q_dst0.buffer());
     }
 
-    for(int i = 0; i < N * M; i++) {
+    for(auto i = 0ul; i < N * M; i++) {
         if (dst32_ptr[0][i] != dst32_ptr[1][i]) {
             std::cout << "\nTest Failed\n";
             std::cout << "dst32_ptr[0]["<< i << "] = " << dst32_ptr[0][i] << "\n";
@@ -461,7 +461,7 @@ int main(int argc, char **argv)
     }
     std::cout << "\nEmpty QuantizationInfo Test Passed\n";
 
-    for(int i = 0; i < N * M; i++) {
+    for(auto i = 0ul; i < N * M; i++) {
         if (dst8_ptr[0][i] != dst8_ptr[1][i]) {
             std::cout << "\nTest Failed\n";
             std::cout << "dst8_ptr[0]["<< i << "] = " << static_cast<int>(dst8_ptr[0][i]) << "\n";
