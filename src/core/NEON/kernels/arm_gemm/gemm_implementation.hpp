@@ -24,6 +24,7 @@
 
 #include "arm_gemm.hpp"
 
+#include <iostream>
 #include "kernel_weight_format.hpp"
 
 #include <cstdint>
@@ -264,6 +265,7 @@ bool find_implementation(const GemmArgs &args, const OutputStage &os, const Gemm
         /* Short circuit - if the estimate is zero, return this one immediately. */
         if (estimate==0) {
             impl=i;
+            std::cout << "find_implementation (cycle): " << impl->name << std::endl;
             return true;
         }
 
@@ -278,6 +280,7 @@ bool find_implementation(const GemmArgs &args, const OutputStage &os, const Gemm
     /* Return whichever method gave the best estimate. */
     if (saved_impl != nullptr) {
         impl = saved_impl;
+        std::cout << "find_implementation: " << impl->name << std::endl;
         return true;
     }
 
